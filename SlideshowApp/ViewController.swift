@@ -11,6 +11,9 @@ import UIKit
 class ViewController: UIViewController {
     
     var index:Int!
+    var state:Int!
+    var timer : NSTimer!
+    
 
     
     @IBOutlet weak var MyImageView: UIImageView!
@@ -18,6 +21,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var StartStopButton: UIButton!
     @IBOutlet weak var nextButton: UIButton!
     @IBOutlet weak var backButton: UIButton!
+    var imageListArray:[UIImage] = []
+    
+
     
 
     
@@ -52,35 +58,54 @@ class ViewController: UIViewController {
     @IBAction func StartStop(sender: AnyObject) {
         nextButton.enabled = false
         backButton.enabled = false
-        if(!MyImageView.isAnimating()){
-            StartStopButton.setTitle("停止", forState: UIControlState.Normal)
-            var imageListArray:[UIImage] = []
-            for index in 1...3{
-                let BuilderImage = UIImage(named:"picture" + String(index) + ".png")
-                if(BuilderImage != nil){
-                    imageListArray.append(BuilderImage!)
-                }
-            }
-            MyImageView.animationImages = imageListArray
-            
-            MyImageView.animationDuration = 2.0
-            MyImageView.animationRepeatCount = 0
-            MyImageView.startAnimating()
 
-        }
-        else if(MyImageView.isAnimating()) {
-            MyImageView.stopAnimating()
+        if(state == 0) {
+        StartStopButton.setTitle("停止", forState: UIControlState.Normal)
+                    timer = NSTimer.scheduledTimerWithTimeInterval(2.0, target: self, selector: #selector(ViewController.imageChange), userInfo: nil, repeats: true)
+         }
+        
+        
+        else {
+            
+            timer.invalidate()
             StartStopButton.setTitle("再生", forState: UIControlState.Normal)
+            state = 0
             nextButton.enabled = true
             backButton.enabled = true
-
             
-        }
+            }
     }
+    func imageChange(){
+        if(index == nil)
+        {
+            index = 0
+        }
+        
+        index = index + 1
+        
+        if(index == 4){
+            index = 1
+        }
+
+        MyImageView.image = UIImage(named:"picture" + String(index) + ".png")
+       state = 1
+
+    }
+    
+        
     
     func didClickImageView(recognizer: UITapGestureRecognizer){
         print("tap!!!")
+        if(index == nil){
+            print("no image")
+        }
+        else if(MyImageView.isAnimating()) {
+            performSegueWithIdentifier("toBig", sender: nil)
+        }
+        else {
         performSegueWithIdentifier("toBig", sender: nil)
+        }
+        
 
    
     }
@@ -99,11 +124,20 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        state = 0
+        for index in 1...3{
+            let BuilderImage = UIImage(named:"picture" + String(index) + ".png")
+            if(BuilderImage != nil){
+                imageListArray.append(BuilderImage!)
+            }
+        }
         StartStopButton.setTitle("再生", forState: UIControlState.Normal)
         MyImageView.image = UIImage(named:"picture" + String(index) + ".png")
         MyImageView.userInteractionEnabled = true
-        let gesture = UITapGestureRecognizer(target: self, action: "didClickImageView:")
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(self.didClickImageView(_:)))
         MyImageView.addGestureRecognizer(gesture)
+        
+        
         
     }
 
